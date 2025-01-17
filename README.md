@@ -51,7 +51,8 @@
 
 ## Capturas de Pantalla
 
-*(Agrega imágenes o gifs del software en funcionamiento aquí).*
+![ConvertorFac Interfaz](https://github.com/Lukreynol01/ConvertorFac/blob/main/Captura%20de%20pantalla%202025-01-16%20223605.png)
+
 
 ## Contribuciones
 
