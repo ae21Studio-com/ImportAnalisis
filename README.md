@@ -27,7 +27,7 @@
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/tuusuario/ConvertorFac.git
+   git clone https://github.com/Lukreynol01/ConvertorFac.git
    ```
 2. Instala las dependencias requeridas:
    ```bash
