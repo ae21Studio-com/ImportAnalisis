@@ -1,7 +1,6 @@
-tkinter
-pandas==1.5.3
+numpy==1.26.4
+pandas==2.2.3
+opencv-python>=4.9
 pytesseract==0.3.10
 Pillow==11.1.0
-pdfplumber==0.5.28
-opencv-python==4.8.0.74
-numpy==1.24.3
+pdfplumber>=0.11
