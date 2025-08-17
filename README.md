@@ -12,6 +12,7 @@
   - Eliminar filas seleccionadas.
   - Limpiar la tabla completa con un solo clic.
 - **Exportación a Excel**: Los datos procesados pueden ser exportados a un archivo Excel, permitiendo agregar información a un archivo existente o crear uno nuevo.
+- **Formateo de Excel**: Convierte archivos Excel existentes al formato ConstrucData con un solo clic.
 
 ## Tecnologías Utilizadas
 
@@ -48,6 +49,7 @@
 2. Utiliza la funcionalidad OCR para procesar cotizaciones escaneadas desde imágenes.
 3. Revisa y edita los datos en la tabla integrada.
 4. Exporta los datos procesados a un archivo Excel.
+5. Si ya cuentas con un Excel y deseas adaptarlo al formato ConstrucData, pulsa **Formatear Excel**, elige el archivo de origen y la ruta donde se guardará el resultado.
 
 ## Capturas de Pantalla
 
