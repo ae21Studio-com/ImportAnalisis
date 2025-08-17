@@ -46,7 +46,7 @@ class PDFExtractorApp:
         self.format_button = ttk.Button(bottom_frame, text="Formatear Excel", command=self.format_excel)
         self.format_button.pack(side="right", padx=5)
 
-        self.delete_button = ttk.Button(bottom_frame, text="Eliminar filas seleccionadas", command=self.table_manager.delete_selected_rows)
+        self.delete_button = ttk.Button(bottom_frame, text="Eliminar filas seleccionadas", command=self.table_manager.delete_selected_rows, )
         self.delete_button.pack(side="left", padx=5)
 
         self.select_button = ttk.Button(bottom_frame, text="Seleccionar PDFs", command=self.load_pdfs)
