@@ -4,6 +4,7 @@ import pdfplumber
 from PIL import Image
 import pandas as pd
 import os
+import json
 
 # Función para extraer texto o tablas de un PDF
 def extract_data_from_pdf(pdf_path):
@@ -35,8 +36,15 @@ def find_headers(data):
     return -1, []
 
 # Función para exportar a Excel
-def export_to_excel(data, output_path):
-    df = pd.DataFrame(data, columns=["Código", "Descripción", "Unidad", "Precio"])
+def export_to_excel(data, resources, output_path):
+    df = pd.DataFrame(data, columns=[
+        "Clave",
+        "Descripción",
+        "Unidad",
+        "Jornada",
+        "Rendimiento",
+    ])
+    df["Insumos/Recursos"] = json.dumps(resources, ensure_ascii=False)
     df.to_excel(output_path, index=False)
 
 # Función para abrir archivos PDF
@@ -216,9 +224,13 @@ class PDFExtractorApp:
         # Actualizar self.data con los datos actuales de la tabla
         self.data = [self.tree.item(row)['values'] for row in self.tree.get_children()]
 
+        # Adaptar los datos al nuevo formato esperado y crear lista de recursos vacía
+        processed_data = [row[:3] + ["", ""] for row in self.data]
+        resources = []
+
         output_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
         if output_path:
-            export_to_excel(self.data, output_path)
+            export_to_excel(processed_data, resources, output_path)
             messagebox.showinfo("Éxito", f"Datos exportados a {output_path}")
           
 # Crear ventana principal
