@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, simpledialog
 import pandas as pd
 from utils.excel_handler import export_to_excel
 import pytesseract
@@ -25,19 +25,34 @@ class TableManager:
         self.h_scroll = ttk.Scrollbar(table_frame, orient=tk.HORIZONTAL)
 
         # Treeview para la tabla
-        self.tree = ttk.Treeview(table_frame, columns=("Código", "Descripción", "Unidad", "Precio"),
-                                 show="headings", selectmode="extended",
-                                 yscrollcommand=self.v_scroll.set,
-                                 xscrollcommand=self.h_scroll.set)
-        self.tree.heading("Código", text="Código")
+        self.tree = ttk.Treeview(
+            table_frame,
+            columns=(
+                "Clave",
+                "Descripción",
+                "Unidad",
+                "Jornada",
+                "Rendimiento",
+                "Insumos/Recursos",
+            ),
+            show="headings",
+            selectmode="extended",
+            yscrollcommand=self.v_scroll.set,
+            xscrollcommand=self.h_scroll.set,
+        )
+        self.tree.heading("Clave", text="Clave")
         self.tree.heading("Descripción", text="Descripción")
         self.tree.heading("Unidad", text="Unidad")
-        self.tree.heading("Precio", text="Precio")
+        self.tree.heading("Jornada", text="Jornada")
+        self.tree.heading("Rendimiento", text="Rendimiento")
+        self.tree.heading("Insumos/Recursos", text="Insumos/Recursos")
 
-        self.tree.column("Código", width=100)
-        self.tree.column("Descripción", width=300)
-        self.tree.column("Unidad", width=100)
-        self.tree.column("Precio", width=100)
+        self.tree.column("Clave", width=80)
+        self.tree.column("Descripción", width=250)
+        self.tree.column("Unidad", width=80)
+        self.tree.column("Jornada", width=80)
+        self.tree.column("Rendimiento", width=100)
+        self.tree.column("Insumos/Recursos", width=200)
 
         # Ubicar la tabla y los scrollbars
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -50,6 +65,9 @@ class TableManager:
 
         self.v_scroll.config(command=self.tree.yview)
         self.h_scroll.config(command=self.tree.xview)
+
+        # Permitir edición de recursos con doble clic
+        self.tree.bind("<Double-1>", self.edit_resource_cell)
 
         # Frame para los botones
         button_frame = ttk.Frame(container)
@@ -81,13 +99,42 @@ class TableManager:
             self.tree.delete(row)
 
         for item in data:
+            resources = item[5] if len(item) > 5 else ""
+            if isinstance(resources, list):
+                resources = ";".join(resources)
+
             cleaned_item = [
-                item[0],  # Código
-                item[1],  # Descripción
-                item[2],  # Unidad
-                item[3].replace('$', '').strip() if isinstance(item[3], str) and '$' in item[3] else item[3]
+                item[0] if len(item) > 0 else "",  # Clave
+                item[1] if len(item) > 1 else "",  # Descripción
+                item[2] if len(item) > 2 else "",  # Unidad
+                item[3] if len(item) > 3 else "",  # Jornada
+                item[4] if len(item) > 4 else "",  # Rendimiento
+                resources,  # Insumos/Recursos
             ]
             self.tree.insert("", tk.END, values=cleaned_item)
+
+    def edit_resource_cell(self, event):
+        """Permite editar la columna de recursos."""
+        region = self.tree.identify_region(event.x, event.y)
+        if region != "cell":
+            return
+        column = self.tree.identify_column(event.x)
+        if column != "#6":  # Columna Insumos/Recursos
+            return
+        row_id = self.tree.identify_row(event.y)
+        if not row_id:
+            return
+
+        current_values = list(self.tree.item(row_id, "values"))
+        current_value = current_values[5] if len(current_values) > 5 else ""
+        new_value = simpledialog.askstring(
+            "Editar recursos",
+            "Ingrese recursos (JSON o separados por ';')",
+            initialvalue=current_value,
+        )
+        if new_value is not None:
+            current_values[5] = new_value
+            self.tree.item(row_id, values=current_values)
 
     def delete_selected_rows(self):
         """Elimina las filas seleccionadas en la tabla."""
@@ -102,7 +149,7 @@ class TableManager:
 
     def export_data(self):
         """Exporta los datos actuales de la tabla a Excel."""
-        data = [self.tree.item(row)['values'] for row in self.tree.get_children()]
+        data = [self.tree.item(row)["values"] for row in self.tree.get_children()]
         output_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
         if output_path:
             try:
@@ -110,9 +157,18 @@ class TableManager:
                 existing_data = pd.read_excel(output_path)
 
                 # Validar encabezados
-                expected_columns = ["Código", "Descripción", "Unidad", "Precio"]
+                expected_columns = [
+                    "Clave",
+                    "Descripción",
+                    "Unidad",
+                    "Jornada",
+                    "Rendimiento",
+                    "Insumos/Recursos",
+                ]
                 if not all(col in existing_data.columns for col in expected_columns):
-                    messagebox.showerror("Error", "El archivo seleccionado no tiene los encabezados correctos.")
+                    messagebox.showerror(
+                        "Error", "El archivo seleccionado no tiene los encabezados correctos."
+                    )
                     return
 
                 # Crear un DataFrame con los datos actuales
@@ -123,7 +179,9 @@ class TableManager:
 
                 # Guardar el archivo actualizado
                 updated_data.to_excel(output_path, index=False)
-                messagebox.showinfo("Éxito", f"Los datos se han agregado al archivo {output_path}")
+                messagebox.showinfo(
+                    "Éxito", f"Los datos se han agregado al archivo {output_path}"
+                )
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo actualizar el archivo: {e}")
 
@@ -154,7 +212,15 @@ class TableManager:
         tk.Label(map_window, text="Mapear áreas seleccionadas a columnas").pack(pady=10)
 
         mapping_vars = []
-        options = ["Código", "Descripción", "Unidad", "Precio", "Ignorar"]
+        options = [
+            "Clave",
+            "Descripción",
+            "Unidad",
+            "Jornada",
+            "Rendimiento",
+            "Insumos/Recursos",
+            "Ignorar",
+        ]
 
         for idx, rect in enumerate(rects):
             x1, y1 = rect[0]
@@ -175,7 +241,17 @@ class TableManager:
 
         def confirm_mapping():
             """Procesa las áreas seleccionadas y mapea los datos a las columnas correspondientes."""
-            mapped_data = {key: [] for key in ["Código", "Descripción", "Unidad", "Precio"]}
+            mapped_data = {
+                key: []
+                for key in [
+                    "Clave",
+                    "Descripción",
+                    "Unidad",
+                    "Jornada",
+                    "Rendimiento",
+                    "Insumos/Recursos",
+                ]
+            }
 
             # Procesar cada área seleccionada
             for rect, var in mapping_vars:
@@ -198,8 +274,14 @@ class TableManager:
 
             # Combinar los datos de las columnas en filas completas
             data = [
-                [mapped_data["Código"][i], mapped_data["Descripción"][i],
-                 mapped_data["Unidad"][i], mapped_data["Precio"][i]]
+                [
+                    mapped_data["Clave"][i],
+                    mapped_data["Descripción"][i],
+                    mapped_data["Unidad"][i],
+                    mapped_data["Jornada"][i],
+                    mapped_data["Rendimiento"][i],
+                    mapped_data["Insumos/Recursos"][i],
+                ]
                 for i in range(max_rows)
             ]
 
