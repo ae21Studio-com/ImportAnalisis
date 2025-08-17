@@ -7,6 +7,7 @@ from PIL import Image
 import pytesseract
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import pandas as pd
 
 
 class PDFExtractorApp:
@@ -174,6 +175,21 @@ class PDFExtractorApp:
 
         try:
             format_to_construcdata(input_path, output_path)
+            df = pd.read_excel(output_path)
+            expected_headers = [
+                "Clave",
+                "Descripción",
+                "Unidad",
+                "Jornada",
+                "Rendimiento",
+                "Insumos/Recursos",
+            ]
+            if not all(header in df.columns for header in expected_headers):
+                raise ValueError(
+                    "El archivo formateado no contiene los encabezados esperados"
+                )
+            data = df[expected_headers].fillna("").values.tolist()
+            self.table_manager.update_table(data)
             messagebox.showinfo("Éxito", "Archivo formateado correctamente")
         except Exception as exc:
             messagebox.showerror("Error", f"No se pudo formatear el archivo: {exc}")
