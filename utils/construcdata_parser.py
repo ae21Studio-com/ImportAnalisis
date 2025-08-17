@@ -1,8 +1,7 @@
-"""Parser for ConstrucData PDF output.
+"""Parser for ConstrucData card rows.
 
-This module processes raw row data extracted from Construction Data
-"An\u00e1lisis de Precio Unitario" PDF files and builds structured
-representations of each card in the document.
+This module processes raw row data extracted from spreadsheets and builds
+structured representations of each "An\u00e1lisis de Precio Unitario" card.
 
 Steps performed:
 1. Locate rows containing the marker "AN\u00c1LISIS DE PRECIO UNITARIO" to
@@ -13,20 +12,12 @@ Steps performed:
    reached. Rows whose first column looks like a resource key are
    accumulated as resources. Rows containing the words ``JORNADA`` or
    ``RENDIMIENTO`` are used to capture those values.
-
-The main public function is :func:`parse_pdf` which accepts a PDF path and
-returns a list of dictionaries with the following keys:
-``clave``, ``descripcion``, ``unidad``, ``jornada``, ``rendimiento`` and
-``recursos``.
 """
 
 from __future__ import annotations
 
 import re
 from typing import Any, Dict, Iterable, List, Optional
-
-from .pdf_parser import extract_data_from_pdf
-
 
 def _is_resource_key(value: str) -> bool:
     """Return ``True`` if *value* looks like a resource key.
@@ -136,11 +127,4 @@ def parse_rows(data: Iterable[List[str]]) -> List[Dict[str, Any]]:
         else:
             i += 1
     return tarjetas
-
-
-def parse_pdf(pdf_path: str) -> List[Dict[str, Any]]:
-    """Convenience wrapper that loads *pdf_path* and parses its content."""
-
-    raw_data = extract_data_from_pdf(pdf_path)
-    return parse_rows(raw_data)
 
