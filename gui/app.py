@@ -1,6 +1,7 @@
 from tkinter import ttk, StringVar, OptionMenu, Button, Toplevel, Frame, filedialog, messagebox
 from utils.pdf_parser import extract_data_from_pdf, find_headers
 from utils.excel_handler import export_to_excel
+from utils.excel_formatter import format_to_construcdata
 from gui.table_manager import TableManager
 from PIL import Image
 import pytesseract
@@ -41,6 +42,9 @@ class PDFExtractorApp:
                         # Botones para cargar PDFs
         self.export_button = ttk.Button(bottom_frame, text="Exportar a Excel", command=self.export_data)
         self.export_button.pack(side="right", padx=5)
+
+        self.format_button = ttk.Button(bottom_frame, text="Formatear Excel", command=self.format_excel)
+        self.format_button.pack(side="right", padx=5)
 
         self.delete_button = ttk.Button(bottom_frame, text="Eliminar filas seleccionadas", command=self.table_manager.delete_selected_rows)
         self.delete_button.pack(side="left", padx=5)
@@ -158,6 +162,21 @@ class PDFExtractorApp:
 
     def export_data(self):
         self.table_manager.export_data()
+
+    def format_excel(self):
+        input_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+        if not input_path:
+            return
+
+        output_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+        if not output_path:
+            return
+
+        try:
+            format_to_construcdata(input_path, output_path)
+            messagebox.showinfo("Éxito", "Archivo formateado correctamente")
+        except Exception as exc:
+            messagebox.showerror("Error", f"No se pudo formatear el archivo: {exc}")
 
 
 
