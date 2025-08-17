@@ -25,9 +25,23 @@ def export_to_excel(data, resources, output_path):
         ],
     )
 
+    def _map_resource(res):
+        return {
+            "Clave": res.get("clave", ""),
+            "Descripción": res.get("descripcion", ""),
+            "Unidad": res.get("unidad", ""),
+            "Cantidad": res.get("cantidad", ""),
+            "Costo": res.get("precio", ""),
+        }
+
     if len(resources) == len(data) and not isinstance(resources, (str, bytes)):
-        df["Insumos/Recursos"] = [json.dumps(r, ensure_ascii=False) for r in resources]
+        df["Insumos/Recursos"] = [
+            json.dumps([_map_resource(r) for r in row], ensure_ascii=False)
+            for row in resources
+        ]
     else:
-        df["Insumos/Recursos"] = json.dumps(resources, ensure_ascii=False)
+        df["Insumos/Recursos"] = json.dumps(
+            [_map_resource(r) for r in resources], ensure_ascii=False
+        )
 
     df.to_excel(output_path, index=False)

@@ -35,24 +35,30 @@ def _parse_resource(row: List[str]) -> Dict[str, str]:
     The number of columns in the raw data may vary; this function tries to
     map the most common five-column layout:
     ``clave``, ``descripcion``, ``unidad``, ``cantidad`` and ``precio``.
-    Any missing fields are filled with an empty string.
+    Any ``importe`` column present in the source is ignored.
+    Missing fields are filled with an empty string.
     """
 
-    if len(row) > 4:
-        descripcion = " ".join(row[1:-3]).strip()
-    elif len(row) > 2:
-        descripcion = " ".join(row[1:-2]).strip()
-    elif len(row) > 1:
-        descripcion = row[1].strip()
+    # Remove trailing "importe" column if present.
+    cleaned = [cell.strip() for cell in row]
+    if len(cleaned) > 5:
+        cleaned = cleaned[:5]
+
+    if len(cleaned) > 4:
+        descripcion = " ".join(cleaned[1:-3]).strip()
+    elif len(cleaned) > 2:
+        descripcion = " ".join(cleaned[1:-2]).strip()
+    elif len(cleaned) > 1:
+        descripcion = cleaned[1].strip()
     else:
         descripcion = ""
 
     recurso: Dict[str, str] = {
-        "clave": row[0].strip() if row else "",
+        "clave": cleaned[0] if cleaned else "",
         "descripcion": descripcion,
-        "unidad": row[-3].strip() if len(row) >= 3 else "",
-        "cantidad": row[-2].strip() if len(row) >= 2 else "",
-        "precio": row[-1].strip() if row else "",
+        "unidad": cleaned[-3] if len(cleaned) >= 3 else "",
+        "cantidad": cleaned[-2] if len(cleaned) >= 2 else "",
+        "precio": cleaned[-1] if cleaned else "",
     }
     return recurso
 
